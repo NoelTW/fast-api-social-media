@@ -45,7 +45,7 @@ async def create_comment(comment: CommentIn):
     return new_comment
 
 
-@router.get("post/{post_id}/comment", response_model=list[Comment])
+@router.get("/post/{post_id}/comment", response_model=list[Comment])
 async def get_comments_on_post(post_id: int):
     return [
         comment for comment in comment_table.values() if comment["post_id"] == post_id
