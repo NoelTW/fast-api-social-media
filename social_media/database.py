@@ -1,7 +1,7 @@
 import databases
 import sqlalchemy
 
-from config import config
+from social_media.config import config
 
 
 # Create all tables
@@ -30,6 +30,6 @@ engine = sqlalchemy.create_engine(
 
 metadata.create_all(engine)
 
-databae = databases.Database(
-    url=config.DATABASE_URL, force_rollback=config.DB_FORCE_ROLLBACK
+database = databases.Database(
+    url=config.DATABASE_URL, force_rollback=config.DB_FORCE_ROLL_BACK
 )
