@@ -1,9 +1,14 @@
-from pytest import fixture
-from typing import Generator, AsyncGenerator
-from httpx import AsyncClient, ASGITransport
+import os
+from typing import AsyncGenerator, Generator
+
 from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
+from pytest import fixture
+
+os.environ["ENV_STATE"] = "test"
+
+from social_media.database import database
 from social_media.main import app
-from social_media.routers.post import comment_table, post_table
 
 
 @fixture(scope="session")
@@ -15,13 +20,14 @@ def anyio_backend() -> str:
 def client() -> Generator:
     with TestClient(app) as client:
         yield client
+    yield TestClient(app)
 
 
 @fixture(autouse=True)
-def db() -> Generator:
-    post_table.clear()
-    comment_table.clear()
+async def db() -> AsyncGenerator:
+    await database.connect()
     yield
+    await database.disconnect()
 
 
 @fixture()

@@ -3,7 +3,6 @@ import sqlalchemy
 
 from social_media.config import config
 
-
 # Create all tables
 metadata = sqlalchemy.MetaData()
 
