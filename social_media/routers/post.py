@@ -44,8 +44,9 @@ async def create_comment(comment: CommentIn):
     logger.info("Creating comment")
     post = await find_post(post_id=comment.post_id)
     if not post:
-        logger.error(f"Post with id {comment.post_id} not found!")
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(
+            status_code=404, detail=f"Post with id {comment.post_id} not found!"
+        )
     data = comment.model_dump()
     query = comment_table.insert().values(data)
     logger.debug(query)
@@ -66,8 +67,9 @@ async def get_post_with_comments(post_id: int):
     logger.info("Getting post and its all comments")
     post = await find_post(post_id=post_id)
     if not post:
-        logger.error(f"Post with id {post_id} not found!")
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(
+            status_code=404, detail=f"Post with id {post_id} not found!"
+        )
     """
     class UserPostWithComments(BaseModel):
     post: UserPost

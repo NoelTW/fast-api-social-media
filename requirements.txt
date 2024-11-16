@@ -6,3 +6,4 @@ databases[aiosqlite]
 pydantic
 pydantic-settings
 rich
+asgi-correlation-id
