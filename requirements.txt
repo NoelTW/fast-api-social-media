@@ -5,3 +5,4 @@ sqlalchemy
 databases[aiosqlite]
 pydantic
 pydantic-settings
+rich
