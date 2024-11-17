@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from social_media.database import comment_table, database, post_table
 from social_media.models.post import (
@@ -10,6 +10,7 @@ from social_media.models.post import (
     UserPostIn,
     UserPostWithComments,
 )
+from social_media.security import get_current_user, oauth2_scheme
 
 router = APIRouter()
 
@@ -24,8 +25,9 @@ async def find_post(post_id: int):
 
 
 @router.post("/post", response_model=UserPost, status_code=201)
-async def create_post(post: UserPostIn):
+async def create_post(post: UserPostIn, request: Request):
     logger.info("Creating post")
+    current_user = await get_current_user(token=await oauth2_scheme(request))  # noqa
     data = post.model_dump()
     query = post_table.insert().values(data)
     last_record_id = await database.execute(query)
@@ -41,8 +43,9 @@ async def get_all_posts():
 
 
 @router.post("/comment", response_model=Comment, status_code=201)
-async def create_comment(comment: CommentIn):
+async def create_comment(comment: CommentIn, request: Request):
     logger.info("Creating comment")
+    current_user = await get_current_user(token=await oauth2_scheme(request))  # noqa
     post = await find_post(post_id=comment.post_id)
     if not post:
         raise HTTPException(

@@ -88,18 +88,12 @@ async def test_get_current_user_token_invalid_token():
 
 
 @pytest.mark.anyio
-async def test_get_current_user_token_expired(registered_user: dict):
-    import datetime
-    import asyncio
-
-    token = create_access_token(registered_user["email"])
-    payload = jwt.decode(token, SECRURITY_KEY, algorithms=[ALGORITHM])
-    payload["exp"] = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-        seconds=1
-    )
-    await asyncio.sleep(1.1)
-    token = jwt.encode(payload, SECRURITY_KEY, algorithm=ALGORITHM)
+async def test_get_current_user_token_expired(registered_user: dict, mocker):
     with pytest.raises(HTTPException) as e:
+        mocker.patch(
+            "social_media.security.asses_token_expire_minutes", return_value=-1
+        )
+        token = create_access_token(registered_user["email"])
         await get_current_user(token)
         assert e.value.status_code == 401
         assert "Token has expired" in e.value.detail
