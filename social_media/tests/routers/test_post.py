@@ -41,7 +41,9 @@ async def created_comment(
 
 
 @pytest.mark.anyio
-async def test_create_post(async_client: AsyncClient, logged_in_token: str):
+async def test_create_post(
+    async_client: AsyncClient, logged_in_token: str, registered_user: dict
+):
     body = "Test post"
     response = await async_client.post(
         "/posts/post",
@@ -49,7 +51,10 @@ async def test_create_post(async_client: AsyncClient, logged_in_token: str):
         headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     assert response.status_code == 201
-    assert response.json().items() >= {"id": 1, "body": body}.items()
+    assert (
+        response.json().items()
+        >= {"id": 1, "body": body, "user_id": registered_user["id"]}.items()
+    )
 
 
 @pytest.mark.anyio
@@ -86,7 +91,10 @@ async def test_get_all_posts(async_client: AsyncClient, created_post: dict):
 
 @pytest.mark.anyio
 async def test_create_comment(
-    async_client: AsyncClient, created_post: dict, logged_in_token: str
+    async_client: AsyncClient,
+    created_post: dict,
+    logged_in_token: str,
+    registered_user: dict,
 ):
     body = "Test comment"
     response = await async_client.post(
@@ -97,16 +105,23 @@ async def test_create_comment(
     assert response.status_code == 201
     assert (
         response.json().items()
-        >= {"id": 1, "post_id": created_post["id"], "body": body}.items()
+        >= {
+            "id": 1,
+            "post_id": created_post["id"],
+            "body": body,
+            "user_id": registered_user["id"],
+        }.items()
     )
 
 
 @pytest.mark.anyio
 async def test_create_comment_missing_body(
-    async_client: AsyncClient, created_post: dict
+    async_client: AsyncClient, created_post: dict, logged_in_token: str
 ):
     response = await async_client.post(
-        "/posts/comment", json={"post_id": created_post["id"]}
+        "/posts/comment",
+        json={"post_id": created_post["id"]},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     assert response.status_code == 422
 
