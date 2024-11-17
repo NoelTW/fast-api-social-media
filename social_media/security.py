@@ -1,6 +1,8 @@
 import datetime
 import logging
 import secrets
+import os
+
 
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -11,7 +13,16 @@ from social_media.database import database, user_table
 
 logger = logging.getLogger(__name__)
 
-SECRURITY_KEY = secrets.token_urlsafe(32)
+
+SECRURITY_KEY = os.environ.get("SECRURITY_KEY")
+
+if SECRURITY_KEY is None:  # Generate a key if not found
+    SECRURITY_KEY = secrets.token_urlsafe(32)
+    print(
+        f"Generated new security key: {SECRURITY_KEY}.  Store this securely as an environment variable!"
+    )
+
+# SECRURITY_KEY = secrets.token_urlsafe(32)
 ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

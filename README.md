@@ -29,11 +29,14 @@ source .venv/bin/activate
 3. Install dependencies:
 ```bash
 pip install -r requirements.txt4. Run the server:
+```
 
 4. Run the server:
 ```bash
 uvicorn main:app --reload
 ```
+
+
 ## Configuration
 Environment-specific configuration is managed using .env files. The project supports dev, prod, and test environments. Create .env files with the appropriate prefixes (e.g., DEV_DATABASE_URL, PROD_DATABASE_URL, TEST_DATABASE_URL).
 
