@@ -25,6 +25,7 @@ async def find_post(post_id: int):
 
 @router.post("/post", response_model=UserPost, status_code=201)
 async def create_post(post: UserPostIn):
+    logger.info("Creating post")
     data = post.model_dump()
     query = post_table.insert().values(data)
     last_record_id = await database.execute(query)
