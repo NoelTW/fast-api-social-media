@@ -7,7 +7,7 @@ from pytest import fixture
 
 os.environ["ENV_STATE"] = "test"
 
-from social_media.database import database
+from social_media.database import database, user_table
 from social_media.main import app
 
 
@@ -18,8 +18,6 @@ def anyio_backend() -> str:
 
 @fixture
 def client() -> Generator:
-    with TestClient(app) as client:
-        yield client
     yield TestClient(app)
 
 
@@ -36,3 +34,14 @@ async def async_client(client) -> AsyncGenerator:
         transport=ASGITransport(app=app), base_url=client.base_url
     ) as ac:
         yield ac
+
+
+@fixture()
+async def registered_user(async_client: AsyncClient) -> dict:
+    user_details = {"email": "test@example.com", "password": "1234"}
+    await async_client.post("/users/register", json=user_details)
+    query = user_table.select().where(user_table.c.email == user_details["email"])
+    # TODO: check if -> user_details = await database.fetch_one(query) works
+    user = await database.fetch_one(query)
+    user_details["id"] = user.id
+    return user_details
