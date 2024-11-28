@@ -26,6 +26,17 @@ async def create_comment(
     return response.json()
 
 
+async def like_post(
+    post_id: int, async_client: AsyncClient, logged_in_token: str
+) -> dict:
+    response = async_client.post(
+        "/posts/like",
+        json={"post_id": post_id},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    return response.json()
+
+
 @pytest.fixture()
 async def created_post(async_client: AsyncClient, logged_in_token: str):
     yield await create_post("Test post", async_client, logged_in_token)
@@ -80,6 +91,25 @@ async def test_create_post_token_expired(
     )
     assert response.status_code == 401
     assert "Token has expired" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def tset_like_post(
+    async_client: AsyncClient,
+    created_post: dict,
+    logged_in_token: str,
+    registered_user: dict,
+):
+    response = await like_post(created_post["id"], async_client, logged_in_token)
+    assert response.status_code == 201
+    assert (
+        response.json().items()
+        >= {
+            "id": 1,
+            "post_id": created_post["id"],
+            "user_id": registered_user["id"],
+        }.items()
+    )
 
 
 @pytest.mark.anyio
