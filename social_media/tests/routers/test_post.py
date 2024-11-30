@@ -82,7 +82,7 @@ async def test_create_post_missing_body(
 async def test_create_post_token_expired(
     async_client: AsyncClient, registered_user: dict, mocker
 ):
-    mocker.patch("social_media.security.asses_token_expire_minutes", return_value=-1)
+    mocker.patch("social_media.security.access_token_expire_minutes", return_value=-1)
     token = security.create_access_token(registered_user["email"])
     response = await async_client.post(
         "/posts/post",
