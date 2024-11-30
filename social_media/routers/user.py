@@ -7,7 +7,7 @@ from social_media.models.user import UserIn
 from social_media.security import (
     authenticate_user,
     create_access_token,
-    create_comfirmation_token,
+    create_confirmation_token,
     get_subject_for_token_type,
     get_user,
     hash_password,
@@ -28,9 +28,9 @@ async def register(user: UserIn, request: Request):
     logger.debug(query)
     await database.execute(query)
     return {
-        "detail": "User created. Please comfirm your email!",
-        "comfirmation": request.url_for(
-            "comfirm_email", token=create_comfirmation_token(user.email)
+        "detail": "User created. Please confirm your email!",
+        "confirmation": request.url_for(
+            "confirm_email", token=create_confirmation_token(user.email)
         ),
     }
 
@@ -42,11 +42,11 @@ async def login(user: UserIn):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/comfirm/{token}")
-async def comfirm_email(token: str):
-    email = get_subject_for_token_type(token, "comfirmation")
+@router.get("/confirm/{token}")
+async def confirm_email(token: str):
+    email = get_subject_for_token_type(token, "confirmation")
     query = (
-        user_table.update().where(user_table.c.email == email).values(comfirmed=True)
+        user_table.update().where(user_table.c.email == email).values(confirmed=True)
     )
     logger.debug(query)
     await database.execute(query)

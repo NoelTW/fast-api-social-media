@@ -7,9 +7,9 @@ from social_media.security import (
     SECRURITY_KEY,
     access_token_expire_minutes,
     authenticate_user,
-    comfirm_token_expire_minutes,
+    confirm_token_expire_minutes,
     create_access_token,
-    create_comfirmation_token,
+    create_confirmation_token,
     create_credentials_exception,
     get_current_user,
     get_subject_for_token_type,
@@ -30,8 +30,8 @@ def test_access_token_expire_minutes():
     assert access_token_expire_minutes() == 30
 
 
-def test_comfirm_token_expire_minutes():
-    assert comfirm_token_expire_minutes() == 1440
+def test_confirm_token_expire_minutes():
+    assert confirm_token_expire_minutes() == 1440
 
 
 def test_create_access_token():
@@ -43,19 +43,19 @@ def test_create_access_token():
     ).items()
 
 
-def test_create_comfirmation_token():
+def test_create_confirmation_token():
     email = "test@example.com"
-    token = create_comfirmation_token(email)
+    token = create_confirmation_token(email)
 
-    assert {"sub": email, "type": "comfirmation"}.items() <= jwt.decode(
+    assert {"sub": email, "type": "confirmation"}.items() <= jwt.decode(
         token=token, key=SECRURITY_KEY, algorithms=ALGORITHM
     ).items()
 
 
-def test_get_subject_for_token_type_valid_comfirmation():
+def test_get_subject_for_token_type_valid_confirmation():
     email = "test@example.com"
-    token = create_comfirmation_token(email)
-    assert get_subject_for_token_type(token, "comfirmation") == email
+    token = create_confirmation_token(email)
+    assert get_subject_for_token_type(token, "confirmation") == email
 
 
 def test_get_subject_for_token_type_valid_access():
@@ -98,8 +98,8 @@ def test_get_subject_for_token_type_wrong_type():
     email = "test@example.com"
     token = create_access_token(email)
     with pytest.raises(HTTPException) as exc_info:
-        get_subject_for_token_type(token, "comfirmation")
-    assert exc_info.value.detail == "Invalid token type, expeted 'comfirmation'"
+        get_subject_for_token_type(token, "confirmation")
+    assert exc_info.value.detail == "Invalid token type, expeted 'confirmation'"
 
 
 @pytest.mark.anyio
@@ -110,9 +110,9 @@ async def test_password_hashes():
 
 
 @pytest.mark.anyio
-async def test_get_user(registered_user: dict):
-    user = await get_user(registered_user["email"])
-    assert user.email == registered_user["email"]
+async def test_get_user(confirmed_user: dict):
+    user = await get_user(confirmed_user["email"])
+    assert user.email == confirmed_user["email"]
 
 
 @pytest.mark.anyio
@@ -122,11 +122,9 @@ async def test_get_user_not_found():
 
 
 @pytest.mark.anyio
-async def test_authenticate_user(registered_user: dict):
-    user = await authenticate_user(
-        registered_user["email"], registered_user["password"]
-    )
-    assert user.email == registered_user["email"]
+async def test_authenticate_user(confirmed_user: dict):
+    user = await authenticate_user(confirmed_user["email"], confirmed_user["password"])
+    assert user.email == confirmed_user["email"]
 
 
 @pytest.mark.anyio
@@ -137,20 +135,20 @@ async def test_authenticate_user_not_found():
 
 
 @pytest.mark.anyio
-async def test_authenticate_user_worng_password(registered_user: dict):
+async def test_authenticate_user_worng_password(confirmed_user: dict):
     with pytest.raises(HTTPException) as exc_info:
         await authenticate_user(
-            email=registered_user["email"], password="wrong password"
+            email=confirmed_user["email"], password="wrong password"
         )
     assert exc_info.value.detail == "Invalid email or password!"
 
 
 @pytest.mark.anyio
-async def test_get_current_user(registered_user: dict):
+async def test_get_current_user(confirmed_user: dict):
 
-    token = create_access_token(registered_user["email"])
+    token = create_access_token(confirmed_user["email"])
     user = await get_current_user(token)
-    assert user.email == registered_user["email"]
+    assert user.email == confirmed_user["email"]
 
 
 @pytest.mark.anyio
@@ -161,20 +159,20 @@ async def test_get_current_user_token_invalid_token():
 
 
 @pytest.mark.anyio
-async def test_get_current_user_token_expired(registered_user: dict, mocker):
+async def test_get_current_user_token_expired(confirmed_user: dict, mocker):
     with pytest.raises(HTTPException) as exc_info:
         mocker.patch(
             "social_media.security.access_token_expire_minutes", return_value=-1
         )
-        token = create_access_token(registered_user["email"])
+        token = create_access_token(confirmed_user["email"])
         await get_current_user(token)
     assert exc_info.value.status_code == 401
     assert "Token has expired" in exc_info.value.detail
 
 
 @pytest.mark.anyio
-async def test_get_current_user_wrong_type_token(registered_user: dict):
-    token = create_comfirmation_token(registered_user["email"])
+async def test_get_current_user_wrong_type_token(confirmed_user: dict):
+    token = create_confirmation_token(confirmed_user["email"])
     with pytest.raises(HTTPException) as exc_info:
         await get_current_user(token)
     assert exc_info.value.detail == "Invalid token type, expeted 'access'"
