@@ -29,7 +29,7 @@ async def create_comment(
 async def like_post(
     post_id: int, async_client: AsyncClient, logged_in_token: str
 ) -> dict:
-    response = async_client.post(
+    response = await async_client.post(
         "/posts/like",
         json={"post_id": post_id},
         headers={"Authorization": f"Bearer {logged_in_token}"},
@@ -116,7 +116,52 @@ async def tset_like_post(
 async def test_get_all_posts(async_client: AsyncClient, created_post: dict):
     response = await async_client.get("/posts/post")
     assert response.status_code == 200
-    assert response.json() == [created_post]
+    assert response.json() == [{**created_post, "likes": 0}]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("sorting, expected_order ", [("new", [2, 1]), ("old", [1, 2])])
+async def test_get_all_posts_sorting(
+    async_client: AsyncClient,
+    logged_in_token: str,
+    sorting: str,
+    expected_order: list,
+):
+
+    await create_post("Test post 1", async_client, logged_in_token)
+    await create_post("Test post 2", async_client, logged_in_token)
+    response = await async_client.get("/posts/post", params=dict(sorting=sorting))
+    assert response.status_code == 200
+    data = response.json()
+    post_ids = [post["id"] for post in data]
+    assert post_ids == expected_order
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "sorting, expected_order ", [("most_likes", [2, 1]), ("least_likes", [1, 2])]
+)
+async def test_get_all_posts_sort_likes(
+    async_client: AsyncClient,
+    logged_in_token: str,
+    sorting: str,
+    expected_order: list,
+):
+
+    await create_post("Test post 1", async_client, logged_in_token)
+    await create_post("Test post 2", async_client, logged_in_token)
+    await like_post(2, async_client, logged_in_token)
+    response = await async_client.get("/posts/post", params=dict(sorting=sorting))
+    assert response.status_code == 200
+    data = response.json()
+    post_ids = [post["id"] for post in data]
+    assert post_ids == expected_order
+
+
+@pytest.mark.anyio
+async def test_get_all_posts_wrong_sorting(async_client: AsyncClient):
+    response = await async_client.get("/posts/post", params=dict(sorting="wrong"))
+    assert response.status_code == 422
 
 
 @pytest.mark.anyio
@@ -182,7 +227,10 @@ async def test_get_post_with_comments(
 ):
     response = await async_client.get(f"/posts/post/{created_post['id']}")
     assert response.status_code == 200
-    assert response.json() == {"post": created_post, "comments": [created_comment]}
+    assert response.json() == {
+        "post": {**created_post, "likes": 0},
+        "comments": [created_comment],
+    }
 
 
 @pytest.mark.anyio

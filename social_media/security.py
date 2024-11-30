@@ -1,6 +1,7 @@
 import datetime
 import logging
-import secrets
+
+# import secrets
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -13,7 +14,8 @@ from social_media.database import database, user_table
 logger = logging.getLogger(__name__)
 
 
-SECRURITY_KEY = secrets.token_urlsafe(32)
+# SECRURITY_KEY = secrets.token_urlsafe(32)
+SECRURITY_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzMyOTYzMTg3fQ.oNUlVqGnu4vIz7LjT8sMi8xS2NPJGH3RWeJ-CEUeuv8"
 ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
