@@ -11,6 +11,8 @@ class BaseConfig(BaseSettings):
 class GlobalConfig(BaseConfig):
     DATABASE_URL: str | None = None
     DB_FORCE_ROLL_BACK: bool = False
+    MAILGUN_API_KEY: str | None = None
+    MAILGUN_DOMAIN: str | None = None
 
 
 class DevConfig(GlobalConfig):
