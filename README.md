@@ -4,7 +4,9 @@ This project demonstrates a simple social media API built with FastAPI, featurin
 
 ## Features
 
+* **User registration and authentication:** Secure user login using JWT.
 * **CRUD operations for posts:** Create, read, update, and delete posts.
+* **Liking posts:** Users can like posts.
 * **Comments on posts:**  Create and read comments associated with a specific post.
 * **Asynchronous database interaction:** Uses `databases` and `async/await` for efficient database operations.
 * **Environment-based configuration:**  Supports different configuration settings for development, production, and testing environments using `pydantic-settings`.
@@ -28,12 +30,12 @@ source .venv/bin/activate
 
 3. Install dependencies:
 ```bash
-pip install -r requirements.txt4. Run the server:
+pip install -r requirements.txt
 ```
 
 4. Run the server:
 ```bash
-uvicorn main:app --reload
+uvicorn social_media.main:app --reload
 ```
 
 
@@ -53,10 +55,16 @@ Project Structure
     - database.py: Database setup and models.
     - logging_config.py: Logging configuration.
     - main.py: Main application file.
+    - models/: Contains Pydantic models.
     - routers/: Contains API routers.
         - post.py: Router for post-related endpoints.
+        - user.py: Router for user-related endpoints.
+    - security.py: Security and authentication logic.
+    - tasks.py: Background tasks.
     - tests/: Contains test files.
-        - post.py: Tests for post-related endpoints.
+        - routers/: Tests for router endpoints.
+        - test_security.py: Tests for security functions.
+        - test_tasks.py: Tests for background tasks.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit pull requests.
